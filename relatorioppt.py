@@ -3,13 +3,15 @@ import pandas as pd
 from pptx import Presentation
 import os
 import PySimpleGUI as sg
+from pptx.util import Pt
+
 
 def menu():
     sg.theme('Dark Blue 3')
     layout = [
               [sg.Text('Caminho do arquivo de Gestão do backlog')],
               [sg.Input(), sg.FileBrowse(key='plan', file_types=(('Text Files', '*.xls'),
-                                                                    ('Text Files', '*.xlsx')))],
+                                                                 ('Text Files', '*.xlsx')))],
               [sg.Text('Nome do Projeto (conforme planilha)')],
               [sg.InputText(key='projeto')],
               [sg.Text('Sprint que deseja fechar')],
@@ -17,11 +19,12 @@ def menu():
               [sg.Text('Horas contratado por Sprint')],
               [sg.InputText(key='horas_sprint')],
               [[sg.Text('Caminho da pasta onde quer salvar os gráficos, \nrelatório e onde está o logo do cliente')],
-              [sg.Input(), sg.FolderBrowse(key='path_save')],
-              [[sg.Text('Caminho do Template PPT')],
-              [sg.Input(), sg.FileBrowse(key='path_template')],
-              [sg.Button('Gerar relatório'), sg.Button('Cancelar')]]]]
+               [sg.Input(), sg.FolderBrowse(key='path_save')],
+               [[sg.Text('Caminho do Template PPT')],
+               [sg.Input(), sg.FileBrowse(key='path_template')],
+               [sg.Button('Gerar relatório'), sg.Button('Cancelar')]]]]
     return sg.Window('Geração de RFS', layout=layout, finalize=True,)
+
 
 def erro():
     sg.theme('DarkRed')
@@ -108,11 +111,11 @@ while True:
 
 # FECHAMENTO DA SPRINT
 
-    ### Saldo
+    # Saldo
             saldo = float(hora_contrato) - float(horas_acumulado)
             if saldo < 0:
                 texto_cons = 'Ao fim da Sprint ' + str(sprint) + ' a ' + projeto + ' tem um saldo negativo de ' + str(
-                    (round(saldo),2)) + ' Horas com a Indicium.'
+                    (round(saldo), 2)) + ' Horas com a Indicium.'
                 texto_cons2 = 'É natural que a Indicium realize mais horas conforme o avanço fluido do projeto.'
             else:
                 texto_cons = 'Ao fim da Sprint ' + str(sprint) + ' a ' + projeto + ' tem um saldo positivo de ' + str(
@@ -126,7 +129,7 @@ while True:
             maior_entrega = agrupamento.idxmax()
             horas_entrega = round(agrupamento.max(), 2)
             texto_cons_entrega = 'A maior parte das horas consumidas na Sprint foram destinadas a: ' + maior_entrega + \
-                                 '\nEla representa um total de ' + str(horas_entrega) + ' horas consumidas de um total de ' \
+                                 '. Ela representa um total de ' + str(horas_entrega) + ' horas consumidas de um total de ' \
                                  + str(total_horas) + ' horas executadas'
 
     # Fechamento maior consumo de horas pessoa
@@ -135,7 +138,7 @@ while True:
             maior_responsavel = agrupamento.idxmax()
             horas_responsavel = round(agrupamento.max(), 2)
             texto_cons_resp = 'A maior parte das horas consumidas na Sprint foram de responsabilidade do(a): ' + \
-                              maior_responsavel + '\n' + 'Ela representa um total de ' + str(horas_responsavel) + \
+                              maior_responsavel + '. Ela representa um total de ' + str(horas_responsavel) + \
                               ' horas consumidas de um total de ' + str(total_horas) + ' horas executadas'
 
     # Planejamento maior consumo de horas na entrega
@@ -145,7 +148,7 @@ while True:
             maior_entrega = agrupamento.idxmax()
             horas_entrega = round(agrupamento.max(), 2)
             texto_plan_ent = 'A maior parte das horas planejadas na Sprint serão destinadas a: ' + maior_entrega + \
-                             '\n' + 'Ela representa um total de ' + str(horas_entrega) + ' horas consumidas de um total de ' \
+                             '. Ela representa um total de ' + str(horas_entrega) + ' horas consumidas de um total de ' \
                              + str(total_horas) + ' horas planejadas'
 
     # Planejamento maior consumo de horas pessoa
@@ -154,7 +157,7 @@ while True:
             maior_responsavel = agrupamento.idxmax()
             horas_responsavel = round(agrupamento.max(), 2)
             texto_plan_resp = 'A maior parte das horas planejadas na Sprint serão de responsabilidade do(a): ' + maior_responsavel \
-                              + '\n' + 'Ela representa um total de ' + str(horas_responsavel) + \
+                              + '. Ela representa um total de ' + str(horas_responsavel) + \
                               ' horas consumidas de um total de ' + str(total_horas) + ' horas planejadas'
 
     # Fechamento - Gráfico de horas por Entrega
@@ -244,28 +247,52 @@ while True:
             img_burnup = save + '/BurnUp' + '.png'
             slide = prs.slides[4]
             picture_burnup = slide.shapes.add_picture(img_burnup, left=300000, top=1100000, width=5000000, height=2800000)
-            slide.placeholders[1].text = texto_cons + '\n' + texto_cons2
+            text_ph1 = slide.placeholders[1]
+            text_ph1.text_frame.text = texto_cons + ' ' + texto_cons2
+            font = text_ph1.text_frame.paragraphs[0].runs[0].font
+            font.name = 'Roboto'
+            font.size = Pt(11)
+            font.bold = False
+            font.italic = False
 
     # Fechamento - Entregas
             img_entregas = save + '/Horas Executadas por Entrega - Sprint ' + str(sprint) + '.png'
             slide = prs.slides[5]
             picture_entregas = slide.shapes.add_picture(img_entregas, left=500000, top=1300000, width=5000000,
                                                         height=3100000)
-            slide.placeholders[1].text = texto_cons_entrega
+            text_ph1 = slide.placeholders[1]
+            text_ph1.text_frame.text = texto_cons_entrega
+            font = text_ph1.text_frame.paragraphs[0].runs[0].font
+            font.name = 'Roboto'
+            font.size = Pt(11)
+            font.bold = False
+            font.italic = False
 
     # Fechamento - Responsável
             img_responsavel = save + '/Horas Executadas por Responsável - Sprint ' + str(sprint) + '.png'
             slide = prs.slides[6]
             picture_responsavel = slide.shapes.add_picture(img_responsavel, left=500000, top=1300000, width=5000000,
                                                            height=3100000)
-            slide.placeholders[1].text = texto_cons_resp
+            text_ph1 = slide.placeholders[1]
+            text_ph1.text_frame.text = texto_cons_resp
+            font = text_ph1.text_frame.paragraphs[0].runs[0].font
+            font.name = 'Roboto'
+            font.size = Pt(11)
+            font.bold = False
+            font.italic = False
 
     # Planejamento - Entregas
             img_plan_entrega = save + '/Horas Planejadas por Entrega - Sprint ' + str(plan_sprint) + '.png'
             slide = prs.slides[7]
             picture_plan_entrega = slide.shapes.add_picture(img_plan_entrega, left=500000, top=1300000, width=5000000,
                                                             height=3100000)
-            slide.placeholders[1].text = texto_plan_ent
+            text_ph1 = slide.placeholders[1]
+            text_ph1.text_frame.text = texto_plan_ent
+            font = text_ph1.text_frame.paragraphs[0].runs[0].font
+            font.name = 'Roboto'
+            font.size = Pt(11)
+            font.bold = False
+            font.italic = False
 
     # Planejamento - Responsável
             img_plan_responsavel = save + '/Horas Planejadas por Responsável - Sprint ' + str(
@@ -273,7 +300,13 @@ while True:
             slide = prs.slides[8]
             picture_plan_responsavel = slide.shapes.add_picture(img_plan_responsavel, left=500000, top=1300000,
                                                                 width=5000000, height=3100000)
-            slide.placeholders[1].text = texto_plan_resp
+            text_ph1 = slide.placeholders[1]
+            text_ph1.text_frame.text = texto_plan_resp
+            font = text_ph1.text_frame.paragraphs[0].runs[0].font
+            font.name = 'Roboto'
+            font.size = Pt(11)
+            font.bold = False
+            font.italic = False
 
 # Salvar arquivo
             prs.save(save + "/" + projeto + ' - Relatório de Fechamento de Sprint ' + sprint + ".pptx")
